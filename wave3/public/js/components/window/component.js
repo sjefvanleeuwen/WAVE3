@@ -188,10 +188,40 @@ class WindowComponent extends HTMLElement {
             this.bringToFront();
         });
         
-        // Set up dragging
-        titleBar.addEventListener('mousedown', (e) => {
+        // Set up dragging with pointer capture
+        titleBar.addEventListener('pointerdown', (e) => {
             if (e.target.closest('.window-controls')) return;
+            
+            // Capture the pointer to maintain control even when mouse moves out
+            titleBar.setPointerCapture(e.pointerId);
+            
             this.startDrag(e);
+            this.bringToFront();
+            
+            e.preventDefault();
+            e.stopPropagation();
+        });
+        
+        // Handle pointer events on the title bar
+        titleBar.addEventListener('pointermove', (e) => {
+            if (this.isDragging) {
+                this.handleDrag(e);
+                e.preventDefault();
+            }
+        });
+        
+        titleBar.addEventListener('pointerup', (e) => {
+            if (this.isDragging) {
+                titleBar.releasePointerCapture(e.pointerId);
+                this.isDragging = false;
+                
+                // Add a small delay to prevent immediate click events after drag
+                setTimeout(() => {
+                    this.shadowRoot.querySelector('.window').classList.remove('dragging');
+                }, 10);
+                
+                e.preventDefault();
+            }
         });
         
         // Set up resizing
@@ -207,6 +237,26 @@ class WindowComponent extends HTMLElement {
         // Global events for drag and resize
         document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
         document.addEventListener('mouseup', () => this.handleMouseUp());
+        
+        // Still keep document-level handlers as fallbacks
+        document.addEventListener('pointermove', (e) => {
+            if (this.isResizing) {
+                this.handleResize(e);
+                e.preventDefault();
+            }
+        });
+        
+        document.addEventListener('pointerup', (e) => {
+            if (this.isResizing) {
+                this.isResizing = false;
+            }
+            
+            // Also handle drag end here as a fallback
+            if (this.isDragging) {
+                this.isDragging = false;
+                this.shadowRoot.querySelector('.window').classList.remove('dragging');
+            }
+        });
     }
     
     // Method to bring window to front
@@ -222,8 +272,9 @@ class WindowComponent extends HTMLElement {
             x: e.clientX - this.position.x,
             y: e.clientY - this.position.y
         };
-        // We don't need to set z-index here anymore as it's handled by bringToFront
-        e.preventDefault();
+        
+        // Add class for styling during drag
+        this.shadowRoot.querySelector('.window').classList.add('dragging');
     }
     
     startResize(e) {
@@ -248,6 +299,7 @@ class WindowComponent extends HTMLElement {
     handleDrag(e) {
         if (!this.isDragging) return;
         
+        // Update the window position based on the pointer movement
         const newX = e.clientX - this.dragStart.x;
         const newY = e.clientY - this.dragStart.y;
         
