@@ -8,6 +8,7 @@ class WindowComponent extends HTMLElement {
         this.position = { x: 0, y: 0 };
         this.size = { width: 400, height: 300 };
         this.aspectRatio = null;
+        this.titleBarHeight = 32; // Define title bar height
         
         // Interaction state
         this.isDragging = false;
@@ -51,10 +52,6 @@ class WindowComponent extends HTMLElement {
             if (!isNaN(ratio) && ratio > 0) {
                 this.aspectRatio = ratio;
                 console.log(`Window initialized with aspect ratio: ${this.aspectRatio}`);
-                
-                // Adjust height to match aspect ratio if needed
-                this.size.height = this.size.width / this.aspectRatio;
-                console.log(`Adjusted size to ${this.size.width}x${this.size.height}`);
             }
         }
     }
@@ -89,6 +86,9 @@ class WindowComponent extends HTMLElement {
                     color: white;
                     cursor: move;
                     user-select: none;
+                    height: ${this.titleBarHeight - 8}px; /* Account for padding */
+                    min-height: ${this.titleBarHeight - 8}px;
+                    box-sizing: border-box;
                 }
                 .window-content {
                     flex: 1;
@@ -238,9 +238,11 @@ class WindowComponent extends HTMLElement {
         let newHeight;
         
         if (this.aspectRatio) {
-            // Strictly maintain aspect ratio
-            newHeight = newWidth / this.aspectRatio;
-            console.log(`Resizing with aspect ratio ${this.aspectRatio}: ${newWidth}x${newHeight}`);
+            // Calculate content height based on aspect ratio
+            const contentHeight = newWidth / this.aspectRatio;
+            // Add title bar height to get total window height
+            newHeight = contentHeight + this.titleBarHeight;
+            console.log(`Resizing with content aspect ratio ${this.aspectRatio}: content ${newWidth}x${contentHeight}, window ${newWidth}x${newHeight}`);
         } else {
             const deltaY = e.clientY - this.resizeStart.y;
             newHeight = Math.max(150, this.resizeStart.height + deltaY);
@@ -275,6 +277,10 @@ class WindowComponent extends HTMLElement {
             this.setAttribute('data-restore-y', this.position.y);
             this.setAttribute('data-restore-width', this.size.width);
             this.setAttribute('data-restore-height', this.size.height);
+            
+            // Make sure content area fills available space
+            const contentArea = this.shadowRoot.querySelector('.window-content');
+            contentArea.style.height = `calc(100vh - ${this.titleBarHeight}px - 40px)`;
         }
     }
     
