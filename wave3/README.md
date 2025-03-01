@@ -6,37 +6,66 @@ WAVE3 is a desktop application built using vanilla JavaScript and HTML5, utilizi
 
 ```
 wave3
-├── public
-│   ├── index.html         # Main HTML file serving as the entry point
+├── public                     # Client-side code and assets
+│   ├── index.html             # Main HTML file serving as the entry point
 │   ├── css
-│   │   └── main.css       # Main styles for the application
+│   │   └── main.css           # Global application styles
 │   ├── js
-│   │   ├── main.js        # Main JavaScript file for initialization
-│   │   ├── components
-│   │   │   ├── button
-│   │   │   │   ├── component.js   # Button component logic
-│   │   │   │   ├── component.css  # Styles for the button component
-│   │   │   │   └── component.html # HTML template for the button component
-│   │   │   └── navbar
-│   │   │       ├── component.js   # Navbar component logic
-│   │   │       ├── component.css  # Styles for the navbar component
-│   │   │       └── component.html # HTML template for the navbar component
-│   │   └── services
-│   │       ├── api
-│   │       │   └── service.js     # API service for making calls
-│   │       └── state
-│   │           └── service.js     # State management service
-│   └── images
-│       └── logo.svg       # Image asset used in the application
-├── server
-│   ├── index.js              # Entry point for server-side code
-│   └── routes
-│       └── api.js            # API routes definition
-├── dist
-│   └── .gitkeep              # Keeps the dist directory in version control
-├── package.json              # npm configuration file
-└── README.md                 # Project documentation
+│   │   ├── main.js            # Application initialization and bootstrap
+│   │   ├── components         # Web Components directory
+│   │   │   ├── button         # Standard button component
+│   │   │   │   ├── component.js   # Button JavaScript implementation
+│   │   │   │   ├── component.css  # Button-specific styles
+│   │   │   │   └── component.html # Button HTML template
+│   │   │   ├── desktop-icon   # Desktop icon component for GUI
+│   │   │   │   ├── component.js   # Icon implementation with drag-and-drop
+│   │   │   │   └── component.css  # Icon styling
+│   │   │   ├── desktop-surface # Desktop workspace container
+│   │   │   │   ├── component.js   # Surface implementation with grid and positioning
+│   │   │   │   ├── component.css  # Desktop styling and layout
+│   │   │   │   └── component.html # Surface template
+│   │   │   ├── navbar         # Navigation bar component
+│   │   │   │   ├── component.js   # Navbar implementation
+│   │   │   │   ├── component.css  # Navbar styling
+│   │   │   │   └── component.html # Navbar template
+│   │   │   └── ... other components
+│   │   └── services           # Reusable services
+│   │       ├── api            # API communication layer
+│   │       │   └── service.js # Handles HTTP requests and responses
+│   │       └── state          # Application state management
+│   │           └── service.js # Centralized state handling
+│   └── images                 # Static image assets
+│       └── logo.svg           # Application logo
+├── server                     # Server-side code
+│   ├── index.js               # Server entry point
+│   └── routes                 # API routing
+│       └── api.js             # API endpoint definitions
+├── dist                       # Build output directory
+│   └── .gitkeep               # Keeps the dist directory in version control
+├── package.json               # Project dependencies and scripts
+└── README.md                  # Project documentation
 ```
+
+## Component Architecture
+
+WAVE3 uses Web Components to create a modular UI:
+
+- **Button Component**: Reusable button elements with customizable styles and behaviors
+- **Desktop Surface Component**: Main workspace container that:
+  - Provides a grid-based layout system
+  - Manages icon positioning and alignment
+  - Handles workspace interactions and events
+  - Supports dynamic resizing and responsive layout
+- **Desktop Icon Component**: Interactive icons that can be positioned and dragged on the desktop interface
+  - Supports custom icons and labels
+  - Implements drag-and-drop functionality
+  - Handles selection, context menus, and double-click events
+- **Navbar Component**: Application navigation with responsive design
+
+## Services
+
+- **API Service**: Centralizes all communication with the backend server
+- **State Service**: Manages application state to ensure consistent data across components
 
 ## Getting Started
 
