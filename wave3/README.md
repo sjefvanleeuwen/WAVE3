@@ -28,6 +28,9 @@ wave3
 │   │   │   │   ├── component.js   # Navbar implementation
 │   │   │   │   ├── component.css  # Navbar styling
 │   │   │   │   └── component.html # Navbar template
+│   │   │   ├── startbar       # Start menu and taskbar component
+│   │   │   │   ├── component.js   # Startbar implementation
+│   │   │   │   └── component.css  # Startbar styling
 │   │   │   └── ... other components
 │   │   └── services           # Reusable services
 │   │       ├── api            # API communication layer
@@ -61,6 +64,11 @@ WAVE3 uses Web Components to create a modular UI:
   - Implements drag-and-drop functionality
   - Handles selection, context menus, and double-click events
 - **Navbar Component**: Application navigation with responsive design
+- **Startbar Component**: Windows-like taskbar that:
+  - Provides a start button and menu trigger
+  - Shows active applications and system tray
+  - Displays current time
+  - Handles window management events
 
 ## Services
 

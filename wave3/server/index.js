@@ -1,8 +1,8 @@
 const express = require('express');
+const app = express();
 const path = require('path');
 const apiRoutes = require('./routes/api');
 
-const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware to serve static files
