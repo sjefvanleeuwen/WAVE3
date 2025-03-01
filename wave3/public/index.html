@@ -76,15 +76,42 @@
     </window-component>
    
     <window-component 
-        title="16:9 Window" 
+        title="YouTube Video" 
         width="800px" 
         height="450px" 
-        x="100" 
+        x="300" 
         y="100"
         aspect-ratio="1.7778">
-        <h1>16:9 Aspect Ratio Window</h1>
-        <p>This window will maintain its aspect ratio when resized.</p>
+        <div style="width: 100%; height: 100%; display: flex; flex-direction: column;">
+            <iframe 
+                width="100%" 
+                height="100%" 
+                src="https://www.youtube.com/embed/m1IdyJAKnlo"
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen>
+            </iframe>
+        </div>
     </window-component>
+
+    <window-component 
+    title="YouTube Video" 
+    width="800px" 
+    height="450px" 
+    x="300" 
+    y="100"
+    aspect-ratio="1.7778">
+    <div style="width: 100%; height: 100%; display: flex; flex-direction: column;">
+        <iframe 
+            width="100%" 
+            height="100%" 
+            src="https://www.youtube.com/embed/m1IdyJAKnlo"
+            frameborder="0" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+            allowfullscreen>
+        </iframe>
+    </div>
+</window-component>
 
     <!-- Scripts -->
     <script type="module">
