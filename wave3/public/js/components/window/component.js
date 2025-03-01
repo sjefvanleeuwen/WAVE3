@@ -1,4 +1,7 @@
 class WindowComponent extends HTMLElement {
+    // Static counter to track the highest z-index
+    static topZIndex = 100;
+
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
@@ -26,6 +29,9 @@ class WindowComponent extends HTMLElement {
         this.render();
         this.applyInitialPositionAndSize();
         this.attachEventListeners();
+        
+        // Set initial z-index and bring to front when created
+        this.bringToFront();
     }
 
     initializeProperties() {
@@ -177,6 +183,11 @@ class WindowComponent extends HTMLElement {
         const maxBtn = this.shadowRoot.querySelector('.maximize');
         const minBtn = this.shadowRoot.querySelector('.minimize');
         
+        // Add click handler to bring window to front
+        window.addEventListener('mousedown', (e) => {
+            this.bringToFront();
+        });
+        
         // Set up dragging
         titleBar.addEventListener('mousedown', (e) => {
             if (e.target.closest('.window-controls')) return;
@@ -198,13 +209,20 @@ class WindowComponent extends HTMLElement {
         document.addEventListener('mouseup', () => this.handleMouseUp());
     }
     
+    // Method to bring window to front
+    bringToFront() {
+        WindowComponent.topZIndex += 1;
+        this.style.zIndex = WindowComponent.topZIndex;
+        console.log(`Window "${this.getAttribute('title')}" brought to front with z-index: ${this.style.zIndex}`);
+    }
+
     startDrag(e) {
         this.isDragging = true;
         this.dragStart = {
             x: e.clientX - this.position.x,
             y: e.clientY - this.position.y
         };
-        this.style.zIndex = 1000;
+        // We don't need to set z-index here anymore as it's handled by bringToFront
         e.preventDefault();
     }
     
