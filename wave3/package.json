@@ -1,0 +1,24 @@
+{
+  "name": "wave3",
+  "version": "1.0.0",
+  "description": "A desktop application built with vanilla JavaScript and Web Components.",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "build": "echo 'Build process goes here'",
+    "test": "echo 'Run tests here'"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "eslint": "^7.32.0"
+  },
+  "keywords": [
+    "web",
+    "components",
+    "javascript"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}

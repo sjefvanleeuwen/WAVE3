@@ -1,0 +1,66 @@
+.desktop-surface {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #1e293b;
+    background-image: linear-gradient(45deg, #2c3e50 25%, #34495e 25%, #34495e 50%, #2c3e50 50%, #2c3e50 75%, #34495e 75%, #34495e 100%);
+    background-size: 60px 60px;
+    overflow: hidden;
+    z-index: 0;
+    user-select: none;
+}
+
+/* Background image styling when an image is provided */
+.desktop-surface.has-background-image {
+    background-image: none; /* Remove the default pattern when we have an image */
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover; /* Cover the entire surface */
+    background-color: #000; /* Fallback color */
+}
+
+/* Optional background image behaviors */
+.desktop-surface.bg-contain {
+    background-size: contain; /* Alternative sizing option */
+}
+
+.desktop-surface.bg-fixed {
+    background-attachment: fixed; /* Fixed background */
+}
+
+.desktop-surface.bg-center {
+    background-position: center center;
+}
+
+.desktop-surface::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.3) 100%);
+    pointer-events: none;
+}
+
+/* Grid pattern overlay */
+.desktop-surface::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+    pointer-events: none;
+}
+
+/* Hide grid on background image */
+.has-background-image::before {
+    opacity: 0.3; /* Make the grid less visible on background images */
+}
