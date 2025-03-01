@@ -224,9 +224,37 @@ class WindowComponent extends HTMLElement {
             }
         });
         
-        // Set up resizing
-        resizeHandle.addEventListener('mousedown', (e) => {
+        // Set up resizing with pointer capture
+        resizeHandle.addEventListener('pointerdown', (e) => {
+            // Capture the pointer to maintain control during resize
+            resizeHandle.setPointerCapture(e.pointerId);
             this.startResize(e);
+            this.bringToFront();
+            
+            e.preventDefault();
+            e.stopPropagation();
+        });
+        
+        // Handle pointer events on resize handle
+        resizeHandle.addEventListener('pointermove', (e) => {
+            if (this.isResizing) {
+                this.handleResize(e);
+                e.preventDefault();
+            }
+        });
+        
+        resizeHandle.addEventListener('pointerup', (e) => {
+            if (this.isResizing) {
+                resizeHandle.releasePointerCapture(e.pointerId);
+                this.isResizing = false;
+                
+                // Remove resizing state class
+                setTimeout(() => {
+                    this.shadowRoot.querySelector('.window').classList.remove('resizing');
+                }, 10);
+                
+                e.preventDefault();
+            }
         });
         
         // Window controls
@@ -240,21 +268,24 @@ class WindowComponent extends HTMLElement {
         
         // Still keep document-level handlers as fallbacks
         document.addEventListener('pointermove', (e) => {
-            if (this.isResizing) {
+            if (this.isDragging) {
+                this.handleDrag(e);
+                e.preventDefault();
+            } else if (this.isResizing) {
                 this.handleResize(e);
                 e.preventDefault();
             }
         });
         
         document.addEventListener('pointerup', (e) => {
-            if (this.isResizing) {
-                this.isResizing = false;
-            }
-            
-            // Also handle drag end here as a fallback
             if (this.isDragging) {
                 this.isDragging = false;
                 this.shadowRoot.querySelector('.window').classList.remove('dragging');
+            }
+            
+            if (this.isResizing) {
+                this.isResizing = false;
+                this.shadowRoot.querySelector('.window').classList.remove('resizing');
             }
         });
     }
@@ -285,6 +316,9 @@ class WindowComponent extends HTMLElement {
             x: e.clientX,
             y: e.clientY
         };
+        
+        // Add class for visual feedback during resize
+        this.shadowRoot.querySelector('.window').classList.add('resizing');
         e.preventDefault();
     }
     

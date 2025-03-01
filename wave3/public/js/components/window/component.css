@@ -23,6 +23,20 @@
     pointer-events: none; /* Disable content interaction during drag */
 }
 
+/* Add resizing state styles */
+.window.resizing {
+    opacity: 0.9;
+    user-select: none;
+}
+
+.window.resizing .window-content {
+    pointer-events: none; /* Disable content interaction during resize */
+}
+
+.window.resizing .resize-handle {
+    background-color: rgba(0, 120, 215, 0.2); /* Highlight the resize handle */
+}
+
 .title-bar {
     display: flex;
     justify-content: space-between;
@@ -97,6 +111,7 @@
     height: 16px;
     cursor: se-resize;
     z-index: 2;
+    touch-action: none; /* Prevent browser handling of touch gestures */
 }
 
 .resize-handle.n {
