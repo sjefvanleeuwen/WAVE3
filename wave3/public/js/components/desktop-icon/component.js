@@ -4,8 +4,7 @@ class DesktopIconComponent extends HTMLElement {
         this.attachShadow({ mode: 'open' });
         this._isDragging = false;
         this._offset = { x: 0, y: 0 };
-        this._iconSize = 64;
-        // Remove _originalPos from constructor - we'll get it from attributes directly
+        this._iconSize = 96; // Changed from 64px to 96px
     }
 
     static get observedAttributes() {
@@ -67,7 +66,7 @@ class DesktopIconComponent extends HTMLElement {
             this._iconSize = parseInt(value);
         } else {
             this.removeAttribute('size');
-            this._iconSize = 64; // Default to 64px
+            this._iconSize = 96; // Changed default from 64px to 96px
         }
     }
 
@@ -261,9 +260,9 @@ class DesktopIconComponent extends HTMLElement {
         const newX = event.clientX - this._offset.x;
         const newY = event.clientY - this._offset.y;
         
-        // Validate positions
-        const validX = Math.max(0, Math.min(window.innerWidth - 100, newX));
-        const validY = Math.max(0, Math.min(window.innerHeight - 100, newY));
+        // Validate positions - account for larger icon size
+        const validX = Math.max(0, Math.min(window.innerWidth - 120, newX)); // Changed from 100 to 120
+        const validY = Math.max(0, Math.min(window.innerHeight - 140, newY)); // Changed from 100 to 140
         
         // Update visually - set explicit pixel values
         const iconElement = this.shadowRoot.querySelector('.desktop-icon');

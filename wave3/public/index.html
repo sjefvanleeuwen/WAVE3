@@ -33,6 +33,7 @@
             background: rgba(0, 0, 0, 0.6);
             padding: 5px;
             border-radius: 4px;
+            margin-top: 150px; /* Ensure it doesn't overlap with icons */
         }
         
         .debug-controls button {
@@ -41,21 +42,23 @@
             background-color: #d9534f;
         }
         
-        /* Ensure desktop icons are absolutely positioned within desktop-surface */
+        /* Ensure desktop icons are absolutely positioned with appropriate spacing */
         desktop-icon {
             position: absolute !important;
             z-index: 10;
+            margin: 15px; /* Added spacing between icons */
         }
     </style>
 </head>
 <body>
     <desktop-surface background-image="images/wallpaper.png">
-        <!-- Initialize with a default position -->
+        <!-- Initialize with a default position and explicit size for the larger icon -->
         <desktop-icon 
             icon="images/icons/wastebin.png" 
             label="Trash"
             position-x="20"
-            position-y="20">
+            position-y="20"
+            size="96">
         </desktop-icon>
     </desktop-surface>
     
@@ -106,6 +109,7 @@
     <script type="module" src="js/components/desktop-surface/component.js"></script>
     <script type="module" src="js/components/desktop-icon/component.js"></script>
     <script type="module" src="js/utilities/position-debugger.js"></script>
+    <script type="module" src="js/utilities/icon-size-updater.js"></script>
     <script type="module" src="js/main.js"></script>
 </body>
 </html>

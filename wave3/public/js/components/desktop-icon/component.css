@@ -4,8 +4,8 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 90px;    /* Increased width to accommodate larger icons */
-    height: 100px;  /* Increased height to accommodate larger icons */
+    width: 120px;   /* Increased width from 90px to 120px for larger icons */
+    height: 140px;  /* Increased height from 100px to 140px for larger icons */
     user-select: none;
     cursor: pointer;
     z-index: 1;
@@ -15,31 +15,31 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 64px;    /* Changed from 48px to 64px */
-    height: 64px;   /* Changed from 48px to 64px */
-    margin-bottom: 5px;
-    border-radius: 8px; /* Slightly increased border radius for larger icon */
+    width: 96px;    /* Changed from 64px to 96px */
+    height: 96px;   /* Changed from 64px to 96px */
+    margin-bottom: 8px; /* Slightly increased from 5px */
+    border-radius: 10px; /* Increased border radius for larger icon */
     transition: all 0.2s ease-in-out;
 }
 
 .icon-image {
-    width: 64px;    /* Changed from 48px to 64px */
-    height: 64px;   /* Changed from 48px to 64px */
+    width: 96px;    /* Changed from 64px to 96px */
+    height: 96px;   /* Changed from 64px to 96px */
     object-fit: contain;
 }
 
 .icon-label {
     text-align: center;
     color: #fff;
-    font-size: 12px;
-    max-width: 90px;  /* Increased from 80px to match the desktop-icon width */
+    font-size: 14px; /* Increased from 12px for better readability */
+    max-width: 110px;  /* Increased from 90px */
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
     background-color: rgba(0, 0, 0, 0.4);
-    padding: 2px 4px;
-    border-radius: 4px;
+    padding: 3px 6px; /* Slightly larger padding */
+    border-radius: 5px;
     transition: all 0.2s ease-in-out;
 }
 
