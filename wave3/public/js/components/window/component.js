@@ -1,200 +1,312 @@
 class WindowComponent extends HTMLElement {
-    // Static counter to track the highest z-index
     static topZIndex = 100;
-
+    
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
-        console.log('Window component constructed');
         
-        // Core state
-        this.position = { x: 0, y: 0 };
-        this.size = { width: 400, height: 300 };
-        this.aspectRatio = null;
-        
-        // Interaction state
-        this.isDragging = false;
-        this.isResizing = false;
-        this.dragStart = { x: 0, y: 0 };
-        this.resizeStart = { width: 0, height: 0, x: 0, y: 0 };
-    }
-
-    static get observedAttributes() {
-        return ['title', 'width', 'height', 'x', 'y', 'aspect-ratio'];
-    }
-
-    connectedCallback() {
-        console.log('Window component connected');
-        this.initializeProperties();
-        this.render();
-        this.applyInitialPositionAndSize();
-        this.attachEventListeners();
-        
-        // Set initial z-index and bring to front when created
-        this.bringToFront();
-    }
-
-    initializeProperties() {
-        // Parse size attributes
-        let width = this.hasAttribute('width') ? parseInt(this.getAttribute('width')) : 400;
-        let height = this.hasAttribute('height') ? parseInt(this.getAttribute('height')) : 300;
-        
-        // Ensure minimum dimensions
-        width = Math.max(200, width);
-        height = Math.max(150, height);
-        
-        this.size = { width, height };
-        
-        // Parse position attributes
-        this.position = {
-            x: this.hasAttribute('x') ? parseInt(this.getAttribute('x')) : 10,
-            y: this.hasAttribute('y') ? parseInt(this.getAttribute('y')) : 10
+        // Store window state
+        this._state = {
+            position: { x: 0, y: 0 },
+            size: { width: 400, height: 300 },
+            aspectRatio: null,
+            isMaximized: false,
+            isDragging: false,
+            isResizing: false
         };
         
-        // Parse aspect ratio
-        if (this.hasAttribute('aspect-ratio')) {
-            const ratio = parseFloat(this.getAttribute('aspect-ratio'));
-            if (!isNaN(ratio) && ratio > 0) {
-                this.aspectRatio = ratio;
-                console.log(`Window initialized with aspect ratio: ${this.aspectRatio}`);
-                
-                // Adjust height to match aspect ratio if needed
-                this.size.height = this.size.width / this.aspectRatio;
-                console.log(`Adjusted size to ${this.size.width}x${this.size.height}`);
+        // Interaction tracking
+        this._dragInfo = { startX: 0, startY: 0 };
+        this._resizeInfo = { startX: 0, startY: 0, startWidth: 0, startHeight: 0 };
+    }
+    
+    static get observedAttributes() {
+        return ['title', 'width', 'height', 'x', 'y', 'aspect-ratio', 'theme'];
+    }
+    
+    // Lifecycle methods
+    connectedCallback() {
+        this.initializeWindow();
+        this.render();
+        this.setupEventListeners();
+        this.bringToFront();
+    }
+    
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (oldValue === newValue) return;
+        
+        if (this.isConnected) {
+            switch (name) {
+                case 'title':
+                    this.updateTitle(newValue);
+                    break;
+                case 'theme':
+                    this.updateTheme(newValue);
+                    break;
+                case 'aspect-ratio':
+                    if (oldValue === null) {
+                        this._state.aspectRatio = parseFloat(newValue) || null;
+                        this.adjustSizeForAspectRatio();
+                    }
+                    break;
             }
         }
     }
-
-    render() {
-        const title = this.getAttribute('title') || 'Untitled Window';
+    
+    // Initialization
+    initializeWindow() {
+        // Parse attributes
+        const width = parseInt(this.getAttribute('width')) || 400;
+        const height = parseInt(this.getAttribute('height')) || 300;
+        const x = parseInt(this.getAttribute('x')) || 10;
+        const y = parseInt(this.getAttribute('y')) || 10;
+        const aspectRatioAttr = this.getAttribute('aspect-ratio');
         
+        // Set initial state
+        this._state.size = { 
+            width: Math.max(200, width),
+            height: Math.max(150, height)
+        };
+        this._state.position = { x, y };
+        
+        if (aspectRatioAttr) {
+            this._state.aspectRatio = parseFloat(aspectRatioAttr) || null;
+            this.adjustSizeForAspectRatio();
+        }
+    }
+    
+    adjustSizeForAspectRatio() {
+        if (this._state.aspectRatio) {
+            this._state.size.height = this._state.size.width / this._state.aspectRatio;
+        }
+    }
+    
+    // Rendering
+    render() {
+        // Get attributes for rendering
+        const title = this.getAttribute('title') || 'Window';
+        const theme = this.getAttribute('theme') || 'light';
+        
+        // Create styles
+        const styles = `
+            :host {
+                display: block;
+                position: absolute;
+                box-sizing: border-box;
+                transform: translate(${this._state.position.x}px, ${this._state.position.y}px);
+                width: ${this._state.size.width}px;
+                height: ${this._state.size.height}px;
+                transition: box-shadow 0.2s, opacity 0.2s;
+            }
+            
+            .window {
+                display: grid;
+                grid-template-rows: auto 1fr;
+                width: 100%;
+                height: 100%;
+                background: ${theme === 'dark' ? '#2a2a2a' : '#ffffff'};
+                border-radius: 4px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+                overflow: hidden;
+                border: 1px solid ${theme === 'dark' ? '#3a3a3a' : '#e0e0e0'};
+            }
+            
+            .window.active {
+                box-shadow: 0 8px 28px rgba(0, 0, 0, 0.2);
+            }
+            
+            .window.dragging {
+                opacity: 0.9;
+                box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+                cursor: move;
+                user-select: none;
+            }
+            
+            .window.resizing {
+                opacity: 0.9;
+                user-select: none;
+            }
+            
+            .titlebar {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                height: 32px;
+                padding: 0 0 0 10px;
+                background: ${theme === 'dark' ? '#1f1f1f' : '#f0f0f0'};
+                color: ${theme === 'dark' ? '#ffffff' : '#333333'};
+                border-bottom: 1px solid ${theme === 'dark' ? '#444' : '#e0e0e0'};
+                user-select: none;
+            }
+            
+            .window-title {
+                font-family: system-ui, 'Segoe UI', sans-serif;
+                font-size: 12px;
+                font-weight: 400;
+                flex: 1;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                margin-right: 10px;
+                color: ${theme === 'dark' ? '#e1e1e1' : '#333333'};
+            }
+            
+            .window-controls {
+                display: flex;
+                height: 100%;
+            }
+            
+            .window-controls button {
+                width: 46px;
+                height: 32px;
+                border: none;
+                background-color: transparent;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: background-color 0.15s;
+                color: ${theme === 'dark' ? '#ffffff' : '#333333'};
+                font-family: 'Segoe UI', system-ui, sans-serif;
+                font-size: 10px;
+            }
+            
+            .window-controls button:hover {
+                background-color: ${theme === 'dark' ? '#444444' : '#e5e5e5'};
+            }
+            
+            .minimize-btn:hover {
+                color: ${theme === 'dark' ? '#ffffff' : '#333333'};
+            }
+            
+            .maximize-btn:hover {
+                color: ${theme === 'dark' ? '#ffffff' : '#333333'};
+            }
+            
+            .close-btn:hover {
+                background-color: #e81123 !important;
+                color: white !important;
+            }
+            
+            .minimize-btn::after {
+                content: "—";
+                font-size: 12px;
+            }
+            
+            .maximize-btn::after {
+                content: "□";
+                font-size: 14px;
+            }
+            
+            .close-btn::after {
+                content: "×";
+                font-size: 16px;
+            }
+            
+            .window-content {
+                position: relative;
+                min-height: 0;
+                overflow: hidden;
+                background: ${theme === 'dark' ? '#2a2a2a' : '#ffffff'};
+                color: ${theme === 'dark' ? '#e1e1e1' : '#333333'};
+            }
+            
+            ::slotted(*) {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                height: 100%;
+                position: absolute;
+                top: 0;
+                left: 0;
+                box-sizing: border-box;
+            }
+            
+            ::slotted(iframe) {
+                border: none;
+            }
+            
+            /* Normal content gets padding */
+            ::slotted(:not(iframe):not(.no-padding)) {
+                padding: 12px;
+            }
+            
+            .resize-handle {
+                position: absolute;
+                width: 14px;
+                height: 14px;
+                right: 0;
+                bottom: 0;
+                cursor: nwse-resize;
+                z-index: 10;
+            }
+            
+            .resize-handle::after {
+                content: "";
+                display: block;
+                position: absolute;
+                right: 3px;
+                bottom: 3px;
+                width: 8px;
+                height: 8px;
+                border-right: 2px solid ${theme === 'dark' ? '#666' : '#ccc'};
+                border-bottom: 2px solid ${theme === 'dark' ? '#666' : '#ccc'};
+            }
+            
+            /* Maximized state */
+            .window.maximized {
+                border-radius: 0;
+            }
+            
+            .window.maximized .resize-handle {
+                display: none;
+            }
+        `;
+        
+        // Create HTML structure
         this.shadowRoot.innerHTML = `
-            <style>
-                :host {
-                    display: block;
-                    position: absolute;
-                }
-                .window {
-                    position: absolute;
-                    width: 100%;
-                    height: 100%;
-                    display: flex;
-                    flex-direction: column;
-                    background: white;
-                    border: 1px solid #ccc;
-                    border-radius: 4px;
-                    box-shadow: 0 0 10px rgba(0,0,0,0.2);
-                    overflow: hidden;
-                }
-                .title-bar {
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    padding: 4px 8px;
-                    background: #2b2b2b;
-                    color: white;
-                    cursor: move;
-                    user-select: none;
-                }
-                .window-content {
-                    flex: 1;
-                    overflow: auto;
-                    padding: 0;
-                    margin: 0;
-                }
-                .resize-handle {
-                    position: absolute;
-                    width: 16px;
-                    height: 16px;
-                    bottom: 0;
-                    right: 0;
-                    cursor: se-resize;
-                }
-                .window-controls {
-                    display: flex;
-                    gap: 4px;
-                }
-                .window-controls button {
-                    width: 24px;
-                    height: 24px;
-                    border: none;
-                    background: transparent;
-                    color: white;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    border-radius: 4px;
-                    cursor: pointer;
-                }
-                .window-controls button:hover {
-                    background: rgba(255,255,255,0.1);
-                }
-                .window-controls .close:hover {
-                    background: #ff4444;
-                }
-                .window.maximized {
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100vw;
-                    height: calc(100vh - 40px);
-                    border-radius: 0;
-                }
-                .window.maximized .resize-handle {
-                    display: none;
-                }
-                ::slotted(*) {
-                    margin: 0;
-                    padding: 0;
-                    width: 100%;
-                    height: 100%;
-                }
-            </style>
+            <style>${styles}</style>
             <div class="window">
-                <div class="title-bar">
+                <div class="titlebar">
                     <div class="window-title">${title}</div>
                     <div class="window-controls">
-                        <button class="minimize">_</button>
-                        <button class="maximize">□</button>
-                        <button class="close">×</button>
+                        <button class="minimize-btn" title="Minimize"></button>
+                        <button class="maximize-btn" title="Maximize"></button>
+                        <button class="close-btn" title="Close"></button>
                     </div>
                 </div>
                 <div class="window-content">
                     <slot></slot>
                 </div>
-                <div class="resize-handle"></div>
+                <div class="resize-handle" title="Resize"></div>
             </div>
         `;
+        
+        // Apply initial size and position
+        this.style.width = `${this._state.size.width}px`;
+        this.style.height = `${this._state.size.height}px`;
+        this.style.transform = `translate(${this._state.position.x}px, ${this._state.position.y}px)`;
     }
-
-    applyInitialPositionAndSize() {
-        this.style.width = `${this.size.width}px`;
-        this.style.height = `${this.size.height}px`;
-        this.style.transform = `translate(${this.position.x}px, ${this.position.y}px)`;
-        console.log(`Initial position: ${this.position.x},${this.position.y} and size: ${this.size.width}x${this.size.height}`);
-    }
-
-    attachEventListeners() {
-        // Get elements
+    
+    // Event handling
+    setupEventListeners() {
         const window = this.shadowRoot.querySelector('.window');
-        const titleBar = this.shadowRoot.querySelector('.title-bar');
+        const titlebar = this.shadowRoot.querySelector('.titlebar');
         const resizeHandle = this.shadowRoot.querySelector('.resize-handle');
-        const closeBtn = this.shadowRoot.querySelector('.close');
-        const maxBtn = this.shadowRoot.querySelector('.maximize');
-        const minBtn = this.shadowRoot.querySelector('.minimize');
         
-        // Add click handler to bring window to front
-        window.addEventListener('mousedown', (e) => {
-            this.bringToFront();
-        });
+        // Window control buttons
+        const closeBtn = this.shadowRoot.querySelector('.close-btn');
+        const minBtn = this.shadowRoot.querySelector('.minimize-btn');
+        const maxBtn = this.shadowRoot.querySelector('.maximize-btn');
         
-        // Set up dragging with pointer capture
-        titleBar.addEventListener('pointerdown', (e) => {
+        // Window click - activate
+        window.addEventListener('mousedown', () => this.bringToFront());
+        
+        // Title bar drag
+        titlebar.addEventListener('pointerdown', e => {
             if (e.target.closest('.window-controls')) return;
             
-            // Capture the pointer to maintain control even when mouse moves out
-            titleBar.setPointerCapture(e.pointerId);
-            
+            titlebar.setPointerCapture(e.pointerId);
             this.startDrag(e);
             this.bringToFront();
             
@@ -202,31 +314,23 @@ class WindowComponent extends HTMLElement {
             e.stopPropagation();
         });
         
-        // Handle pointer events on the title bar
-        titleBar.addEventListener('pointermove', (e) => {
-            if (this.isDragging) {
+        titlebar.addEventListener('pointermove', e => {
+            if (this._state.isDragging) {
                 this.handleDrag(e);
                 e.preventDefault();
             }
         });
         
-        titleBar.addEventListener('pointerup', (e) => {
-            if (this.isDragging) {
-                titleBar.releasePointerCapture(e.pointerId);
-                this.isDragging = false;
-                
-                // Add a small delay to prevent immediate click events after drag
-                setTimeout(() => {
-                    this.shadowRoot.querySelector('.window').classList.remove('dragging');
-                }, 10);
-                
+        titlebar.addEventListener('pointerup', e => {
+            if (this._state.isDragging) {
+                titlebar.releasePointerCapture(e.pointerId);
+                this.stopDrag();
                 e.preventDefault();
             }
         });
         
-        // Set up resizing with pointer capture
-        resizeHandle.addEventListener('pointerdown', (e) => {
-            // Capture the pointer to maintain control during resize
+        // Window resize
+        resizeHandle.addEventListener('pointerdown', e => {
             resizeHandle.setPointerCapture(e.pointerId);
             this.startResize(e);
             this.bringToFront();
@@ -235,165 +339,176 @@ class WindowComponent extends HTMLElement {
             e.stopPropagation();
         });
         
-        // Handle pointer events on resize handle
-        resizeHandle.addEventListener('pointermove', (e) => {
-            if (this.isResizing) {
+        resizeHandle.addEventListener('pointermove', e => {
+            if (this._state.isResizing) {
                 this.handleResize(e);
                 e.preventDefault();
             }
         });
         
-        resizeHandle.addEventListener('pointerup', (e) => {
-            if (this.isResizing) {
+        resizeHandle.addEventListener('pointerup', e => {
+            if (this._state.isResizing) {
                 resizeHandle.releasePointerCapture(e.pointerId);
-                this.isResizing = false;
-                
-                // Remove resizing state class
-                setTimeout(() => {
-                    this.shadowRoot.querySelector('.window').classList.remove('resizing');
-                }, 10);
-                
+                this.stopResize();
                 e.preventDefault();
             }
         });
         
         // Window controls
-        closeBtn.addEventListener('click', () => this.closeWindow());
-        maxBtn.addEventListener('click', () => this.maximizeWindow());
-        minBtn.addEventListener('click', () => this.minimizeWindow());
-        
-        // Global events for drag and resize
-        document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
-        document.addEventListener('mouseup', () => this.handleMouseUp());
-        
-        // Still keep document-level handlers as fallbacks
-        document.addEventListener('pointermove', (e) => {
-            if (this.isDragging) {
-                this.handleDrag(e);
-                e.preventDefault();
-            } else if (this.isResizing) {
-                this.handleResize(e);
-                e.preventDefault();
-            }
-        });
-        
-        document.addEventListener('pointerup', (e) => {
-            if (this.isDragging) {
-                this.isDragging = false;
-                this.shadowRoot.querySelector('.window').classList.remove('dragging');
-            }
-            
-            if (this.isResizing) {
-                this.isResizing = false;
-                this.shadowRoot.querySelector('.window').classList.remove('resizing');
-            }
-        });
+        closeBtn.addEventListener('click', () => this.close());
+        minBtn.addEventListener('click', () => this.minimize());
+        maxBtn.addEventListener('click', () => this.toggleMaximize());
     }
     
-    // Method to bring window to front
-    bringToFront() {
-        WindowComponent.topZIndex += 1;
-        this.style.zIndex = WindowComponent.topZIndex;
-        console.log(`Window "${this.getAttribute('title')}" brought to front with z-index: ${this.style.zIndex}`);
-    }
-
-    startDrag(e) {
-        this.isDragging = true;
-        this.dragStart = {
-            x: e.clientX - this.position.x,
-            y: e.clientY - this.position.y
-        };
-        
-        // Add class for styling during drag
-        this.shadowRoot.querySelector('.window').classList.add('dragging');
-    }
-    
-    startResize(e) {
-        this.isResizing = true;
-        this.resizeStart = {
-            width: this.size.width,
-            height: this.size.height,
-            x: e.clientX,
-            y: e.clientY
-        };
-        
-        // Add class for visual feedback during resize
-        this.shadowRoot.querySelector('.window').classList.add('resizing');
-        e.preventDefault();
-    }
-    
-    handleMouseMove(e) {
-        if (this.isDragging) {
-            this.handleDrag(e);
-        } else if (this.isResizing) {
-            this.handleResize(e);
-        }
-    }
-    
-    handleDrag(e) {
-        if (!this.isDragging) return;
-        
-        // Update the window position based on the pointer movement
-        const newX = e.clientX - this.dragStart.x;
-        const newY = e.clientY - this.dragStart.y;
-        
-        this.position = { x: newX, y: newY };
-        this.style.transform = `translate(${newX}px, ${newY}px)`;
-    }
-    
-    handleResize(e) {
-        if (!this.isResizing) return;
-        
-        const deltaX = e.clientX - this.resizeStart.x;
-        let newWidth = Math.max(200, this.resizeStart.width + deltaX);
-        let newHeight;
-        
-        if (this.aspectRatio) {
-            // Strictly maintain aspect ratio
-            newHeight = newWidth / this.aspectRatio;
-            console.log(`Resizing with aspect ratio ${this.aspectRatio}: ${newWidth}x${newHeight}`);
-        } else {
-            const deltaY = e.clientY - this.resizeStart.y;
-            newHeight = Math.max(150, this.resizeStart.height + deltaY);
-        }
-        
-        this.size = { width: newWidth, height: newHeight };
-        this.style.width = `${newWidth}px`;
-        this.style.height = `${newHeight}px`;
-    }
-    
-    handleMouseUp() {
-        this.isDragging = false;
-        this.isResizing = false;
-    }
-    
-    closeWindow() {
+    // Window actions
+    close() {
         this.dispatchEvent(new CustomEvent('window-close'));
         this.remove();
     }
     
-    maximizeWindow() {
+    minimize() {
+        this.style.display = 'none';
+        this.dispatchEvent(new CustomEvent('window-minimize'));
+    }
+    
+    maximize() {
         const window = this.shadowRoot.querySelector('.window');
+        window.classList.add('maximized');
         
-        if (window.classList.contains('maximized')) {
-            window.classList.remove('maximized');
-            this.style.width = `${this.size.width}px`;
-            this.style.height = `${this.size.height}px`;
-            this.style.transform = `translate(${this.position.x}px, ${this.position.y}px)`;
+        // Store current size and position for restore
+        this.dataset.restoreX = this._state.position.x;
+        this.dataset.restoreY = this._state.position.y;
+        this.dataset.restoreWidth = this._state.size.width;
+        this.dataset.restoreHeight = this._state.size.height;
+        
+        // Set maximized size and position
+        this.style.transform = 'translate(0, 0)';
+        this.style.width = '100vw';
+        this.style.height = 'calc(100vh - 40px)'; // Account for taskbar
+        
+        this._state.isMaximized = true;
+        
+        this.dispatchEvent(new CustomEvent('window-maximize'));
+    }
+    
+    restore() {
+        const window = this.shadowRoot.querySelector('.window');
+        window.classList.remove('maximized');
+        
+        // Restore previous size and position
+        this._state.position.x = parseInt(this.dataset.restoreX) || 0;
+        this._state.position.y = parseInt(this.dataset.restoreY) || 0;
+        this._state.size.width = parseInt(this.dataset.restoreWidth) || 400;
+        this._state.size.height = parseInt(this.dataset.restoreHeight) || 300;
+        
+        this.style.transform = `translate(${this._state.position.x}px, ${this._state.position.y}px)`;
+        this.style.width = `${this._state.size.width}px`;
+        this.style.height = `${this._state.size.height}px`;
+        
+        this._state.isMaximized = false;
+        
+        this.dispatchEvent(new CustomEvent('window-restore'));
+    }
+    
+    toggleMaximize() {
+        if (this._state.isMaximized) {
+            this.restore();
         } else {
-            window.classList.add('maximized');
-            this.setAttribute('data-restore-x', this.position.x);
-            this.setAttribute('data-restore-y', this.position.y);
-            this.setAttribute('data-restore-width', this.size.width);
-            this.setAttribute('data-restore-height', this.size.height);
+            this.maximize();
         }
     }
     
-    minimizeWindow() {
-        this.style.display = 'none';
-        this.dispatchEvent(new CustomEvent('window-minimize'));
+    bringToFront() {
+        WindowComponent.topZIndex += 1;
+        this.style.zIndex = WindowComponent.topZIndex;
+        
+        // Add active class for visual indication
+        const allWindows = document.querySelectorAll('window-component');
+        allWindows.forEach(win => {
+            if (win.shadowRoot) {
+                const windowEl = win.shadowRoot.querySelector('.window');
+                if (windowEl) windowEl.classList.remove('active');
+            }
+        });
+        
+        this.shadowRoot.querySelector('.window').classList.add('active');
+        
+        this.dispatchEvent(new CustomEvent('window-focus'));
+    }
+    
+    // Drag operations
+    startDrag(e) {
+        this._state.isDragging = true;
+        this._dragInfo = {
+            startX: e.clientX - this._state.position.x,
+            startY: e.clientY - this._state.position.y
+        };
+        
+        this.shadowRoot.querySelector('.window').classList.add('dragging');
+    }
+    
+    handleDrag(e) {
+        if (!this._state.isDragging) return;
+        
+        const newX = e.clientX - this._dragInfo.startX;
+        const newY = e.clientY - this._dragInfo.startY;
+        
+        this._state.position = { x: newX, y: newY };
+        this.style.transform = `translate(${newX}px, ${newY}px)`;
+    }
+    
+    stopDrag() {
+        this._state.isDragging = false;
+        this.shadowRoot.querySelector('.window').classList.remove('dragging');
+    }
+    
+    // Resize operations
+    startResize(e) {
+        this._state.isResizing = true;
+        this._resizeInfo = {
+            startX: e.clientX,
+            startY: e.clientY,
+            startWidth: this._state.size.width,
+            startHeight: this._state.size.height
+        };
+        
+        this.shadowRoot.querySelector('.window').classList.add('resizing');
+    }
+    
+    handleResize(e) {
+        if (!this._state.isResizing) return;
+        
+        const deltaX = e.clientX - this._resizeInfo.startX;
+        const newWidth = Math.max(200, this._resizeInfo.startWidth + deltaX);
+        
+        let newHeight;
+        if (this._state.aspectRatio) {
+            newHeight = newWidth / this._state.aspectRatio;
+        } else {
+            const deltaY = e.clientY - this._resizeInfo.startY;
+            newHeight = Math.max(150, this._resizeInfo.startHeight + deltaY);
+        }
+        
+        this._state.size = { width: newWidth, height: newHeight };
+        this.style.width = `${newWidth}px`;
+        this.style.height = `${newHeight}px`;
+    }
+    
+    stopResize() {
+        this._state.isResizing = false;
+        this.shadowRoot.querySelector('.window').classList.remove('resizing');
+    }
+    
+    // Helper methods
+    updateTitle(title) {
+        const titleEl = this.shadowRoot.querySelector('.window-title');
+        if (titleEl) titleEl.textContent = title || 'Window';
+    }
+    
+    updateTheme(theme) {
+        // Re-render with the new theme
+        this.render();
     }
 }
 
 customElements.define('window-component', WindowComponent);
-console.log('Window component registered');
