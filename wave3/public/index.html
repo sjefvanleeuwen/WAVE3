@@ -5,10 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WAVE3</title>
     <link rel="stylesheet" href="css/main.css">
+    <!-- Ensure the filesystem service is loaded first -->
+    <script type="module" src="js/services/filesystem/service.js"></script>
     <!-- Add imports for the panel system components -->
     <script type="module" src="js/components/panel-system/panel-container.js"></script>
     <script type="module" src="js/components/panel-system/panel-area.js"></script>
     <script type="module" src="js/components/panel-system/nested-panel.js"></script>
+    <!-- Load file explorer component -->
+    <script type="module" src="js/components/file-explorer/file-explorer-component.js"></script>
     <style>
         /* Additional styles to ensure proper position of desktop elements */
         desktop-surface {
