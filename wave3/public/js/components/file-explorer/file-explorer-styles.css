@@ -189,17 +189,22 @@ button:disabled {
     z-index: 100;
 }
 
+/* Fix file item layout to ensure text is next to icon on same line */
+
+/* File item container - make it more explicitly horizontal */
 .file-item {
-    width: 80px;
-    height: 100px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer !important; /* Force pointer cursor */
-    padding: 5px;
+    width: 220px !important; /* Force width to be larger */
+    height: 36px !important; /* Reduce height */
+    display: flex !important;
+    flex-direction: row !important; /* Ensure horizontal layout */
+    align-items: center !important; /* Vertically center content */
+    justify-content: flex-start !important; /* Start from left */
+    padding: 4px 8px !important;
+    margin-bottom: 8px;
+    gap: 8px !important; /* Space between icon and text */
     box-sizing: border-box;
     border-radius: 4px;
+    overflow: visible !important; /* Ensure content isn't hidden */
 }
 
 .file-item:hover {
@@ -212,27 +217,33 @@ button:disabled {
     border: 1px solid #99c9ff;
 }
 
+/* File icon - make it more compact */
 .file-icon {
-    width: 48px;
-    height: 48px;
-    margin-bottom: 5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 32px;
+    width: 24px !important; /* Fixed width icon */
+    height: 24px !important;
+    min-width: 24px !important; /* Prevent shrinking */
+    display: inline-flex !important; /* Inline flex for better layout */
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 20px !important; /* Slightly smaller icon */
+    margin: 0 !important; /* Remove any margins */
+    flex-shrink: 0 !important; /* Prevent shrinking */
+    padding: 0 !important; /* Remove padding */
 }
 
+/* File name - ensure text flows correctly */
 .file-name {
-    font-size: 12px;
-    text-align: center;
-    word-break: break-word;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    user-select: none; /* Prevent text selection */
+    flex-grow: 1 !important;
+    text-align: left !important;
+    font-size: 14px !important;
+    white-space: nowrap !important; /* Keep on single line */
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: inline-block !important; /* Force inline display */
+    vertical-align: middle !important; /* Align with icon */
+    line-height: 24px !important; /* Match height of icon */
+    user-select: none !important;
+    max-width: 180px !important; /* Maximum width for text */
 }
 
 /* Details panel */

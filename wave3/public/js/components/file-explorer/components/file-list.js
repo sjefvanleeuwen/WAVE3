@@ -258,15 +258,38 @@ class FileList {
         const itemElement = document.createElement('div');
         itemElement.className = 'file-item';
         itemElement.dataset.path = item.path;
-        itemElement.style.cursor = 'pointer'; // Add inline style for cursor
+        
+        // Set inline styles to ensure horizontal layout
+        itemElement.style.display = 'flex';
+        itemElement.style.flexDirection = 'row';
+        itemElement.style.alignItems = 'center';
+        itemElement.style.cursor = 'pointer';
+        itemElement.style.width = '220px';
+        itemElement.style.height = '36px';
         
         // Determine icon based on type
         let icon = item.type === 'directory' ? '📁' : getFileIcon(item.name);
         
-        itemElement.innerHTML = `
-            <div class="file-icon" style="cursor: pointer;">${icon}</div>
-            <div class="file-name" style="cursor: pointer; user-select: none;">${item.name}</div>
-        `;
+        // Create icon and name elements separately for better control
+        const iconElement = document.createElement('div');
+        iconElement.className = 'file-icon';
+        iconElement.textContent = icon;
+        iconElement.style.cursor = 'pointer';
+        iconElement.style.fontSize = '20px';
+        iconElement.style.flexShrink = '0';
+        
+        const nameElement = document.createElement('div');
+        nameElement.className = 'file-name';
+        nameElement.textContent = item.name;
+        nameElement.style.cursor = 'pointer';
+        nameElement.style.userSelect = 'none';
+        nameElement.style.overflow = 'hidden';
+        nameElement.style.textOverflow = 'ellipsis';
+        nameElement.style.whiteSpace = 'nowrap';
+        
+        // Append elements in the correct order
+        itemElement.appendChild(iconElement);
+        itemElement.appendChild(nameElement);
         
         // Add click handler for selection
         itemElement.addEventListener('click', (e) => {
