@@ -1,0 +1,456 @@
+/* Add these rules at the top of the file to ensure they have precedence */
+
+/* Global cursor styles for all interactive elements */
+.folder-node,
+.file-item,
+.breadcrumb-item,
+.explorer-toolbar button,
+.action-buttons button,
+#close-btn {
+    cursor: pointer !important;
+}
+
+/* Ensure child elements also have pointer cursor */
+.folder-node *,
+.file-item *,
+.breadcrumb-item * {
+    cursor: pointer !important;
+}
+
+/* Prevent text selection for item names */
+.file-name,
+.folder-node span,
+.breadcrumb-item {
+    user-select: none !important;
+}
+
+/* Direct descendant style for specific elements */
+.file-list > .file-item {
+    cursor: pointer !important;
+}
+
+.folder-tree > .folder-node {
+    cursor: pointer !important;
+}
+
+/* Reset cursor for disabled buttons */
+button:disabled {
+    cursor: not-allowed !important;
+}
+
+/* Hover state clarification */
+.file-item:hover,
+.folder-node:hover,
+.breadcrumb-item:hover {
+    cursor: pointer !important;
+}
+
+/* File Explorer Component Styles */
+
+:host {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* Main container */
+.file-explorer {
+    width: 100%;
+    height: 100%;
+}
+
+/* Toolbar */
+.explorer-toolbar {
+    padding: 5px;
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.explorer-toolbar button {
+    padding: 4px 8px;
+    margin-right: 4px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    cursor: pointer !important; /* Force pointer cursor */
+}
+
+.explorer-toolbar button:hover {
+    background-color: #f8f8f8;
+}
+
+.explorer-toolbar button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+/* Path bar */
+.path-bar {
+    margin: 5px 0;
+    padding: 4px 8px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+/* Breadcrumb navigation */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    cursor: default;
+}
+
+.breadcrumb-item {
+    cursor: pointer !important; /* Force pointer cursor */
+    padding: 2px 4px;
+    border-radius: 3px;
+    user-select: none; /* Prevent text selection */
+}
+
+.breadcrumb-item:hover {
+    background-color: rgba(0,0,0,0.05);
+    cursor: pointer !important;
+}
+
+.breadcrumb-separator {
+    color: #777;
+}
+
+/* Folder tree */
+.folder-tree {
+    font-size: 14px;
+    line-height: 1.5;
+    overflow: auto;
+    height: 100%;
+    cursor: default;
+}
+
+.folder-node {
+    padding: 2px 5px;
+    cursor: pointer !important; /* Force pointer cursor */
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    border-radius: 3px;
+}
+
+.folder-node:hover {
+    background-color: #e9ecef;
+    cursor: pointer !important;
+}
+
+.folder-node.active {
+    background-color: #007bff;
+    color: white;
+}
+
+/* File list */
+.file-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px;
+    align-content: flex-start;
+    overflow: auto;
+    height: 100%;
+    cursor: default;
+    position: relative;
+    min-height: 200px;
+}
+
+/* Style when files are dragged over */
+.file-list.drag-over {
+    background-color: rgba(0, 120, 255, 0.1);
+    border: 2px dashed #007bff;
+    border-radius: 4px;
+}
+
+.file-list.drag-over::after {
+    content: 'Drop files to upload';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    color: #007bff;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+}
+
+.file-item {
+    width: 80px;
+    height: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer !important; /* Force pointer cursor */
+    padding: 5px;
+    box-sizing: border-box;
+    border-radius: 4px;
+}
+
+.file-item:hover {
+    background-color: #e9ecef;
+    cursor: pointer !important;
+}
+
+.file-item.selected {
+    background-color: #e2eeff;
+    border: 1px solid #99c9ff;
+}
+
+.file-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+}
+
+.file-name {
+    font-size: 12px;
+    text-align: center;
+    word-break: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    user-select: none; /* Prevent text selection */
+}
+
+/* Details panel */
+.file-details {
+    padding: 10px;
+    font-size: 13px;
+}
+
+.detail-row {
+    margin-bottom: 8px;
+}
+
+.detail-label {
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+.detail-value {
+    word-break: break-all;
+}
+
+/* Action buttons */
+.action-buttons {
+    margin-top: 15px;
+    display: flex;
+    gap: 8px;
+}
+
+.action-buttons button {
+    padding: 5px 10px;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    cursor: pointer !important; /* Force pointer cursor */
+}
+
+.action-buttons button:hover {
+    background-color: #e0e0e0;
+}
+
+/* Status messages */
+.error-message {
+    color: #d9534f;
+    padding: 10px;
+    background-color: rgba(217, 83, 79, 0.1);
+    border-radius: 4px;
+    margin: 10px;
+}
+
+.empty-folder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100px;
+    color: #777;
+    font-style: italic;
+}
+
+/* File viewer/editor */
+.file-viewer-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.file-viewer-container {
+    width: 80%;
+    height: 80%;
+    background-color: white;
+    border-radius: 5px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.file-viewer-header {
+    padding: 10px 15px;
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.file-viewer-content {
+    flex-grow: 1;
+    overflow: auto;
+    padding: 15px;
+}
+
+.file-viewer-close,
+#close-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer !important; /* Force pointer cursor */
+}
+
+/* Ensure pointer cursor appears immediately when the cursor enters the element */
+.file-item *,
+.folder-node *,
+.breadcrumb-item * {
+    cursor: inherit;
+}
+
+/* Ensure cursor doesn't change to text selection cursor */
+.folder-node span {
+    user-select: none; /* Prevent text selection */
+}
+
+/* Add drop zone styles */
+
+/* Empty folder with upload hint */
+.upload-hint {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+    color: #777;
+    font-style: italic;
+}
+
+.upload-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+    color: #999;
+}
+
+.upload-message {
+    line-height: 1.5;
+}
+
+/* Drop zone hint at bottom of list */
+.drop-zone-hint {
+    width: 100%;
+    padding: 20px;
+    margin-top: 20px;
+    text-align: center;
+    color: #777;
+    background-color: #f8f9fa;
+    border: 1px dashed #dee2e6;
+    border-radius: 4px;
+    grid-column: 1 / -1;
+}
+
+.drop-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+/* Upload status notifications */
+.upload-status {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    min-width: 250px;
+    padding: 12px 15px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 200;
+    animation: slideIn 0.3s ease;
+    transition: opacity 0.5s ease;
+}
+
+.upload-status.fade-out {
+    opacity: 0;
+}
+
+.upload-status.info {
+    background-color: #e9f5fe;
+    border-left: 4px solid #0099ff;
+}
+
+.upload-status.success {
+    background-color: #e6f7ea;
+    border-left: 4px solid #28a745;
+}
+
+.upload-status.error {
+    background-color: #feebeb;
+    border-left: 4px solid #dc3545;
+}
+
+.status-message {
+    margin-right: 10px;
+    font-size: 14px;
+}
+
+.status-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: #666;
+}
+
+/* Animation for status notifications */
+@keyframes slideIn {
+    0% {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}

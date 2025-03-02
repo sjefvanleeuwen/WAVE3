@@ -192,21 +192,55 @@ class FileSystemService {
     
     /**
      * Update a file's content
+     * @param {string} path - Path to the file
+     * @param {string|ArrayBuffer} content - Content to write
+     * @returns {boolean} True if successful
      */
     writeFile(path, content) {
-        const file = this.getNode(path);
-        
-        if (file.type !== 'file') {
-            throw new Error(`Not a file: ${path}`);
+        try {
+            const parts = path.split('/').filter(p => p);
+            const fileName = parts.pop();
+            const parentPath = '/' + parts.join('/');
+            
+            // Fix: Use getNode instead of _getNodeByPath
+            const parentNode = this.getNode(parentPath); 
+            
+            if (!parentNode.children) {
+                parentNode.children = {};
+            }
+            
+            // Determine file size based on content type
+            let size = 0;
+            if (typeof content === 'string') {
+                size = content.length;
+            } else if (content instanceof ArrayBuffer) {
+                size = content.byteLength;
+            } else if (content instanceof Uint8Array) {
+                size = content.length;
+            }
+            
+            // Create new file or update existing one
+            parentNode.children[fileName] = {
+                type: 'file',
+                name: fileName,
+                path: path,
+                size: size,
+                content: content,
+                created: parentNode.children[fileName]?.created || new Date().toISOString(),
+                modified: new Date().toISOString()
+            };
+            
+            // Update parent modification time
+            parentNode.modified = new Date().toISOString();
+            
+            // Save changes to localStorage
+            this._queueSave();
+            
+            return true;
+        } catch (error) {
+            console.error(`Error writing file: ${path}`, error);
+            throw error;
         }
-        
-        file.content = content;
-        file.size = content.length;
-        file.modified = Date.now();
-        
-        this._queueSave();
-        
-        return file;
     }
     
     /**
