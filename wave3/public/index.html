@@ -60,6 +60,16 @@
             position-y="20"
             size="96">
         </desktop-icon>
+        
+        <!-- Add panel system demo icon -->
+        <desktop-icon 
+            icon="images/icons/app.png" 
+            label="Panel Demo"
+            position-x="20"
+            position-y="140"
+            size="96"
+            onclick="openPanelDemo()">
+        </desktop-icon>
 
     </desktop-surface>
     <start-bar></start-bar>
@@ -165,6 +175,11 @@ aspect-ratio="1.7778">
                 }, 50);
             });
         });
+
+        // Add function to open panel demo
+        function openPanelDemo() {
+            window.open('js/components/panel-system/demo.html', '_blank', 'width=1024,height=768');
+        }
     </script>
     <script type="module" src="js/services/api/service.js"></script>
     <script type="module" src="js/services/state/service.js"></script>

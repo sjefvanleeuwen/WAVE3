@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel System Demo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        .demo-container {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .content {
+            padding: 15px;
+        }
+        
+        .color-block {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .toolbar {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+        
+        button {
+            padding: 8px 12px;
+            margin: 0 5px;
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #3367d6;
+        }
+        
+        select {
+            padding: 8px;
+            margin: 0 5px;
+        }
+        
+        .panel-title {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <panel-container id="main-panel"></panel-container>
+    </div>
+    
+    <div class="toolbar">
+        <select id="region-select">
+            <option value="top">Top</option>
+            <option value="left">Left</option>
+            <option value="center" selected>Center</option>
+            <option value="right">Right</option>
+            <option value="bottom">Bottom</option>
+        </select>
+        <button id="add-panel">Add Panel</button>
+        <button id="add-nested">Add Nested Panel</button>
+        <button id="reset">Reset Layout</button>
+    </div>
+    
+    <script type="module">
+        // Fix import paths to use relative paths instead of absolute paths
+        import './panel-container.js';
+        import './panel-area.js';
+        import './nested-panel.js';
+        
+        // Panel counter for unique IDs
+        let panelCounter = 1;
+        
+        // Get main panel container
+        const mainPanel = document.getElementById('main-panel');
+        
+        // Add panel button
+        document.getElementById('add-panel').addEventListener('click', () => {
+            const region = document.getElementById('region-select').value;
+            addNewPanel(region);
+        });
+        
+        // Add nested panel button
+        document.getElementById('add-nested').addEventListener('click', () => {
+            const region = document.getElementById('region-select').value;
+            addNestedPanel(region);
+        });
+        
+        // Reset button
+        document.getElementById('reset').addEventListener('click', () => {
+            // Reset the layout
+            localStorage.removeItem('panel_system_config');
+            mainPanel.clearPanels();
+            createDefaultLayout();
+        });
+        
+        /**
+         * Add a new panel to the specified region
+         */
+        function addNewPanel(region) {
+            const id = `panel-${panelCounter++}`;
+            const colors = ['#4285f4', '#34a853', '#fbbc05', '#ea4335', '#673ab7', '#3f51b5'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            
+            // Create content element
+            const content = document.createElement('div');
+            content.className = 'content';
+            
+            const colorBlock = document.createElement('div');
+            colorBlock.className = 'color-block';
+            colorBlock.style.backgroundColor = color;
+            colorBlock.textContent = `Panel ${id}`;
+            colorBlock.style.height = '100%';
+            
+            content.appendChild(colorBlock);
+            
+            // Add the panel
+            mainPanel.addPanel(content, region, {
+                title: `Panel ${id}`,
+                id: id,
+                closable: true,
+                collapsible: true
+            });
+            
+            console.log(`Added panel ${id} to ${region}`);
+        }
+        
+        /**
+         * Add a nested panel container
+         */
+        function addNestedPanel(region) {
+            const id = `nested-panel-${panelCounter++}`;
+            
+            // Create a nested panel element
+            const nestedPanel = document.createElement('nested-panel');
+            nestedPanel.id = id;
+            
+            // Add the nested panel to main container
+            const panel = mainPanel.addPanel(nestedPanel, region, {
+                title: `Nested Panel ${id}`,
+                id: id,
+                closable: true,
+                collapsible: true
+            });
+            
+            // Add some panels to the nested container
+            setTimeout(() => {
+                // Get the internal container from the nested panel
+                const container = nestedPanel.panelContainer;
+                
+                // Add panels to different regions
+                ['top', 'left', 'center', 'right', 'bottom'].forEach(nestedRegion => {
+                    const content = document.createElement('div');
+                    content.className = 'color-block';
+                    content.style.backgroundColor = getRegionColor(nestedRegion);
+                    content.textContent = `${nestedRegion} panel`;
+                    
+                    container.addPanel(content, nestedRegion, {
+                        title: `${nestedRegion.charAt(0).toUpperCase() + nestedRegion.slice(1)}`,
+                        closable: true,
+                        collapsible: true
+                    });
+                });
+                
+                console.log(`Added nested panel ${id} to ${region}`);
+            }, 100); // Small delay to ensure the nested panel is properly mounted
+        }
+        
+        /**
+         * Get a color for a region
+         */
+        function getRegionColor(region) {
+            const colors = {
+                top: '#4285f4',    // Blue
+                left: '#34a853',   // Green
+                center: '#fbbc05', // Yellow
+                right: '#ea4335',  // Red
+                bottom: '#673ab7'  // Purple
+            };
+            
+            return colors[region] || '#3f51b5';
+        }
+        
+        /**
+         * Create a default layout with panels in each region
+         */
+        function createDefaultLayout() {
+            // Add a panel to each region
+            addNewPanel('center');
+            addNewPanel('left');
+            addNewPanel('right');
+            addNewPanel('top');
+            addNewPanel('bottom');
+            
+            // Add a nested panel to the center
+            setTimeout(() => {
+                addNestedPanel('center');
+            }, 200);
+        }
+        
+        // Initialize with a default layout
+        createDefaultLayout();
+        
+        // Set up drag-and-drop region switching
+        document.addEventListener('panel-drag', (e) => {
+            const { panel, x, y } = e.detail;
+            
+            // Determine which region the panel was dropped in
+            // (This would require more complex hit testing)
+            console.log(`Panel dragged: ${panel.id} to position: ${x}, ${y}`);
+        });
+    </script>
+    
+    <!-- Panel system event monitor -->
+    <script type="module">
+        document.addEventListener('panel-close', (e) => {
+            console.log('Panel closed:', e.detail.panel.id);
+        });
+        
+        document.addEventListener('panel-toggle', (e) => {
+            console.log(`Panel ${e.detail.panel.id} ${e.detail.collapsed ? 'collapsed' : 'expanded'}`);
+        });
+        
+        document.addEventListener('panel-resized', (e) => {
+            console.log(`Region ${e.detail.region} resized to ${e.detail.size}px`);
+        });
+    </script>
+</body>
+</html>
