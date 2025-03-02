@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WAVE3</title>
     <link rel="stylesheet" href="css/main.css">
+    <!-- Add imports for the panel system components -->
+    <script type="module" src="js/components/panel-system/panel-container.js"></script>
+    <script type="module" src="js/components/panel-system/panel-area.js"></script>
+    <script type="module" src="js/components/panel-system/nested-panel.js"></script>
     <style>
         /* Additional styles to ensure proper position of desktop elements */
         desktop-surface {
@@ -140,6 +144,312 @@ aspect-ratio="1.7778">
         allowfullscreen>
     </iframe>
 </div>
+</window-component>
+
+<window-component 
+    title="File Explorer" 
+    width="1000px" 
+    height="600px" 
+    x="400" 
+    y="150">
+    <style>
+        /* File explorer specific styles */
+        .explorer-toolbar {
+            padding: 5px;
+            background-color: #f0f0f0;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .explorer-toolbar button {
+            padding: 4px 8px;
+            margin-right: 4px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        
+        .path-bar {
+            margin: 5px 0;
+            padding: 4px 8px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .folder-tree {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .folder-node {
+            padding: 2px 5px;
+            cursor: pointer;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+        }
+        
+        .folder-node:hover {
+            background-color: #e9ecef;
+        }
+        
+        .folder-node.active {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .file-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 10px;
+            align-content: flex-start;
+        }
+        
+        .file-item {
+            width: 80px;
+            height: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            padding: 5px;
+            box-sizing: border-box;
+            border-radius: 4px;
+        }
+        
+        .file-item:hover {
+            background-color: #e9ecef;
+        }
+        
+        .file-item.selected {
+            background-color: #e2eeff;
+        }
+        
+        .file-icon {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 5px;
+        }
+        
+        .file-name {
+            font-size: 12px;
+            text-align: center;
+            word-break: break-word;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+        }
+        
+        .file-details {
+            padding: 10px;
+            font-size: 13px;
+        }
+        
+        .detail-row {
+            margin-bottom: 8px;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+    </style>
+    
+    <!-- Panel system for file explorer layout -->
+    <panel-container id="file-explorer-main">
+        <!-- This will be filled programmatically -->
+    </panel-container>
+    
+    <script>
+        // Initialize the file explorer once the component is connected
+        document.addEventListener('DOMContentLoaded', function() {
+            // Increase the delay to ensure components are fully loaded and registered
+            setTimeout(initializeFileExplorer, 500);
+        });
+        
+        function initializeFileExplorer() {
+            const explorerContainer = document.querySelector('#file-explorer-main');
+            if (!explorerContainer) {
+                console.error('File explorer container not found');
+                return;
+            }
+            
+            // Check if the panel API is available
+            if (typeof explorerContainer.addPanel !== 'function') {
+                console.error('Panel container component not fully initialized. Retrying...');
+                // Retry after a longer delay
+                setTimeout(initializeFileExplorer, 500);
+                return;
+            }
+            
+            // Continue with initialization
+            // Create upper panel (toolbar)
+            const toolbarPanel = document.createElement('div');
+            toolbarPanel.className = 'explorer-toolbar';
+            toolbarPanel.innerHTML = `
+                <button>← Back</button>
+                <button>→ Forward</button>
+                <button>↑ Up</button>
+                <button>⟳ Refresh</button>
+                <div class="path-bar">
+                    <span>C:\\Users\\Documents\\</span>
+                </div>
+            `;
+            
+            // Add toolbar to the top region
+            explorerContainer.addPanel(toolbarPanel, 'top', {
+                title: 'Navigation',
+                collapsible: true
+            });
+            
+            // Create a nested panel container for the main content area
+            const contentPanel = document.createElement('nested-panel');
+            
+            // Add the nested panel to the center region
+            const contentPanelRef = explorerContainer.addPanel(contentPanel, 'center');
+            
+            // Access the nested panel container
+            const contentContainer = contentPanel.panelContainer;
+            
+            // Create folder tree view for left panel
+            const folderTreePanel = document.createElement('div');
+            folderTreePanel.className = 'folder-tree';
+            folderTreePanel.innerHTML = `
+                <div class="folder-node active">
+                    <span>📁 Documents</span>
+                </div>
+                <div style="padding-left: 15px">
+                    <div class="folder-node">
+                        <span>📁 Projects</span>
+                    </div>
+                    <div style="padding-left: 15px">
+                        <div class="folder-node">
+                            <span>📁 WAVE3</span>
+                        </div>
+                    </div>
+                    <div class="folder-node">
+                        <span>📁 Personal</span>
+                    </div>
+                </div>
+                <div class="folder-node">
+                    <span>📁 Pictures</span>
+                </div>
+                <div class="folder-node">
+                    <span>📁 Downloads</span>
+                </div>
+            `;
+            
+            // Create file list view for center panel
+            const fileListPanel = document.createElement('div');
+            fileListPanel.className = 'file-list';
+            
+            // Generate sample files
+            const fileTypes = [
+                { name: 'Document.docx', icon: '📄' },
+                { name: 'Spreadsheet.xlsx', icon: '📊' },
+                { name: 'Presentation.pptx', icon: '📑' },
+                { name: 'Image.jpg', icon: '🖼️' },
+                { name: 'Archive.zip', icon: '📦' },
+                { name: 'Source Code.js', icon: '📝' },
+                { name: 'Config.json', icon: '⚙️' },
+                { name: 'Video.mp4', icon: '🎬' }
+            ];
+            
+            fileTypes.forEach(file => {
+                const fileElement = document.createElement('div');
+                fileElement.className = 'file-item';
+                fileElement.innerHTML = `
+                    <div class="file-icon">${file.icon}</div>
+                    <div class="file-name">${file.name}</div>
+                `;
+                fileElement.addEventListener('click', () => selectFile(file, fileElement));
+                fileListPanel.appendChild(fileElement);
+            });
+            
+            // Create file details panel for right panel
+            const fileDetailsPanel = document.createElement('div');
+            fileDetailsPanel.className = 'file-details';
+            fileDetailsPanel.innerHTML = `
+                <div class="detail-row">
+                    <span class="detail-label">Name:</span>
+                    <span class="detail-value">Select a file</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Type:</span>
+                    <span class="detail-value">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Size:</span>
+                    <span class="detail-value">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Created:</span>
+                    <span class="detail-value">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Modified:</span>
+                    <span class="detail-value">-</span>
+                </div>
+            `;
+            
+            // Add the panels to the nested container
+            contentContainer.addPanel(folderTreePanel, 'left', {
+                title: 'Folders',
+                closable: false,
+                collapsible: true
+            });
+            
+            contentContainer.addPanel(fileListPanel, 'center', {
+                title: 'Files',
+                closable: false
+            });
+            
+            contentContainer.addPanel(fileDetailsPanel, 'right', {
+                title: 'Details',
+                closable: false,
+                collapsible: true
+            });
+            
+            // Function to handle file selection
+            function selectFile(file, element) {
+                // Remove selected class from all files
+                document.querySelectorAll('.file-item').forEach(el => {
+                    el.classList.remove('selected');
+                });
+                
+                // Add selected class to clicked file
+                element.classList.add('selected');
+                
+                // Update details panel
+                fileDetailsPanel.innerHTML = `
+                    <div class="detail-row">
+                        <span class="detail-label">Name:</span>
+                        <span class="detail-value">${file.name}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Type:</span>
+                        <span class="detail-value">${file.name.split('.').pop().toUpperCase()} File</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Size:</span>
+                        <span class="detail-value">${Math.floor(Math.random() * 1000)} KB</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Created:</span>
+                        <span class="detail-value">${new Date().toLocaleDateString()}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Modified:</span>
+                        <span class="detail-value">${new Date().toLocaleDateString()}</span>
+                    </div>
+                `;
+            }
+        }
+    </script>
 </window-component>
 
     <!-- Scripts -->
